@@ -51,14 +51,14 @@ export default class PlayerTagger extends Plugin {
         this.settings.playerTags = {
             text: 'Player Tags (username:tag1,tag2;username2:tag1,tag2;)',
             type: SettingsTypes.text,
-            value: '0rangeYouGlad:HEDGE🧙‍♀️,PLUGIN DEV;',
+            value: '0rangeYouGlad:CLAN⚔️,Example Tag',
             callback: () => {},
         };   
 
         this.settings.tagStyles = {
             text: 'Tag styles (+tag=css +tag2=css)',
             type: SettingsTypes.text,
-            value: '+HEDGE🧙‍♀️=font-weight:300;background:rgba(230,230,250,200);border:2px solid rgba(75,0,130,255);border-radius:2px;text-align: center;padding:2px 6px;margin-right:6px;color:rgba(75,0,130,255);',
+            value: '+CLAN⚔️=font-weight:300;background:rgba(230,230,250,200);border:2px solid rgba(75,0,130,255);border-radius:2px;text-align: center;padding:2px 6px;margin-right:6px;color:rgba(75,0,130,255);',
             callback: () => {},
         };
 
