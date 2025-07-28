@@ -193,8 +193,6 @@ export default class PlayerTagger extends Plugin {
         if (!container) return;
         if (!this.settings.enable?.value || !this.isInitialized) return;
 
-        this.log("Process new nameplate: " + JSON.stringify(container.innerHTML));
-
         const messages = container.querySelectorAll(
 `[id^='highlite-nameplates-player']`        );
         let foundNewMessages = false;
@@ -217,7 +215,7 @@ export default class PlayerTagger extends Plugin {
 
                 span.setAttribute('data-player-tag-injected', 'true');
                 msgEl.prepend(span);
-                this.trackInjected(msgEl);
+                this.trackInjected(span);
             }
         });
 
@@ -275,7 +273,7 @@ export default class PlayerTagger extends Plugin {
                 if (playerNameContainer) {
                     span.setAttribute('data-player-tag-injected', 'true');
                     playerNameContainer.prepend(span);
-                    this.trackInjected(msgEl);
+                    this.trackInjected(span);
                 }
             }
         });
