@@ -9,6 +9,7 @@ export default class PlayerTagger extends Plugin {
     private messageWatchersSetup = false;
     private nameplateWatchersSetup = false;
     private processedMessages = new Set<HTMLElement>();
+    private observers: MutationObserver[] = [];
 
     private defaultTagStyle = 'background:rgba(0.1,0.1,0.1,0.6) ; border-radius:2px; border:2px solid rgba(0, 0, 0, 1); text-align: center;padding:2px 2px;margin-right:2px;color:white;font-weight: 300; line-height: 2; font-size: x-small;';
 
@@ -99,6 +100,10 @@ export default class PlayerTagger extends Plugin {
     private cleanup(): void {
         this.log('Cleaning up PlayerTagger...');
 
+                
+        this.observers.forEach(observer => observer.disconnect());
+        this.observers = [];
+
         this.injectedEls.forEach(el => {
             if (el.parentNode) {
                 el.parentNode.removeChild(el);
@@ -133,6 +138,17 @@ export default class PlayerTagger extends Plugin {
         this.nameplateCheckInterval = window.setInterval(() => {
             this.scanAllNameplates();
         }, 500);
+    }
+
+    private trackObserver(
+        fn: MutationCallback,
+        target: Node,
+        opts: MutationObserverInit
+    ): MutationObserver {
+        const observer = new MutationObserver(fn);
+        observer.observe(target, opts);
+        this.observers.push(observer);
+        return observer;
     }
     
     private setupMessageWatching(): void {
