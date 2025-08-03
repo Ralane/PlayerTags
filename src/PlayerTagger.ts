@@ -4,11 +4,13 @@ export default class PlayerTagger extends Plugin {
     pluginName: string = 'Player Tagger';
     author = '0rangeYouGlad';
 
-    private injectedEls: HTMLElement[] = [];
+    private injectedEls = new Set<HTMLElement>();
     private isInitialized = false;
     private messageWatchersSetup = false;
     private nameplateWatchersSetup = false;
+
     private processedMessages = new Set<HTMLElement>();
+    
     private observers: MutationObserver[] = [];
 
     private defaultTagStyle = 'background:rgba(0.1,0.1,0.1,0.6) ; border-radius:2px; border:2px solid rgba(0, 0, 0, 1); text-align: center;padding:2px 2px;margin-right:2px;color:white;font-weight: 300; line-height: 2; font-size: x-small;';
@@ -42,7 +44,7 @@ export default class PlayerTagger extends Plugin {
     }
 
     private trackInjected(el: HTMLElement): void {
-        this.injectedEls.push(el);
+        this.injectedEls.add(el);
     }
 
     constructor() {
@@ -53,28 +55,45 @@ export default class PlayerTagger extends Plugin {
             text: 'Player Tags (username:tag1,tag2;username2:tag1,tag2;)',
             type: SettingsTypes.text,
             value: '0rangeYouGlad:CLAN⚔️,Example Tag',
-            callback: () => {},
+            callback: () => {
+                this.cleanupProcessedElements();
+                if(this.settings.tagChat.value) this.scanAllMessages();
+                if(this.settings.tagNameplates.value) this.scanAllNameplates();
+            },
         };   
 
         this.settings.tagStyles = {
             text: 'Tag styles (+tag=css +tag2=css)',
             type: SettingsTypes.text,
             value: '+CLAN⚔️=font-weight:300;background:rgba(230,230,250,200);border:2px solid rgba(75,0,130,255);border-radius:2px;text-align: center;padding:2px 2px;margin-right:2px;color:rgba(75,0,130,255);font-size: x-small; line-height:2;',
-            callback: () => {},
+            callback: () => {
+                this.cleanupProcessedElements();
+                this.processedMessages.clear();
+                if(this.settings.tagChat.value) this.scanAllMessages();
+                if(this.settings.tagNameplates.value) this.scanAllNameplates();
+            },
         };
 
         this.settings.tagChat = {
             text: 'Chat Tags',
             type: SettingsTypes.checkbox,
             value: true,
-            callback: () => {},
+            callback: () => {
+                this.cleanupProcessedElements();
+                if(this.settings.tagChat.value) this.scanAllMessages();
+                if(this.settings.tagNameplates.value) this.scanAllNameplates();
+            },
         };
 
         this.settings.tagNameplates = {
             text: 'Nameplate Tags',
             type: SettingsTypes.checkbox,
             value: true,
-            callback: () => {},
+            callback: () => {
+                this.cleanupProcessedElements();
+                if(this.settings.tagChat.value) this.scanAllMessages();
+                if(this.settings.tagNameplates.value) this.scanAllNameplates();
+            },
         };
     }
 
@@ -109,7 +128,7 @@ export default class PlayerTagger extends Plugin {
                 el.parentNode.removeChild(el);
             }
         });
-        this.injectedEls = [];
+        this.injectedEls.clear();
 
         if (this.messageCheckInterval) {
             window.clearInterval(this.messageCheckInterval);
@@ -172,11 +191,6 @@ export default class PlayerTagger extends Plugin {
                             if (record.addedNodes.length) {
                                 setTimeout(() => this.scanAllMessages(), 10);
                             }
-                            if (record.removedNodes.length) {
-                                this.cleanupRemovedMessages(
-                                    record.removedNodes
-                                );
-                            }
                         });
                     },
                     list,
@@ -223,21 +237,12 @@ export default class PlayerTagger extends Plugin {
 
             const playerName = `${msg.textContent}`.trim();
 
-            if (
-                !msgEl.dataset.playerTagsInjected
-            ) {
-                msgEl.dataset.playerTagsInjected = 'true';
-                const span = this.getTagSpan(playerName);
+            const span = this.getTagSpan(playerName);
 
-                span.setAttribute('data-player-tag-injected', 'true');
-                msgEl.prepend(span);
-                this.trackInjected(span);
-            }
+            msgEl.setAttribute('data-player-tag-injected', 'true');
+            msgEl.prepend(span);
+            this.trackInjected(span);
         });
-
-        if (foundNewMessages) {
-            this.cleanupProcessedElements();
-        }
     }
 
     private scanAllMessages(): void {
@@ -280,46 +285,22 @@ export default class PlayerTagger extends Plugin {
             }
             const playerName = `${playerNameContainer?.textContent}`.replace("From ", "").replace(":", "").trim();
 
-            if (
-                !msgEl.dataset.playerTagsInjected
-            ) {
-                msgEl.dataset.playerTagsInjected = 'true';
-                const span = this.getTagSpan(playerName);
+            const span = this.getTagSpan(playerName);
 
-                if (playerNameContainer) {
-                    span.setAttribute('data-player-tag-injected', 'true');
-                    playerNameContainer.prepend(span);
-                    this.trackInjected(span);
-                }
+            if (playerNameContainer) {
+                msgEl.setAttribute('data-player-tag-injected', 'true');
+                playerNameContainer.prepend(span);
+                this.trackInjected(span);
             }
         });
-
-        if (foundNewMessages) {
-            this.cleanupProcessedElements();
-        }
     }
 
     private cleanupProcessedElements(): void {
-        this.processedMessages.forEach(msgEl => {
-            if (!document.contains(msgEl)) {
-                this.processedMessages.delete(msgEl);
-            }
+        this.injectedEls.forEach(msgEl => {
+            msgEl.remove();
+            this.injectedEls.delete(msgEl);
         });
-    }
-
-    private cleanupRemovedMessages(removedNodes: NodeList): void {
-        removedNodes.forEach(node => {
-            if (node instanceof HTMLElement) {
-                const injectedElements = node.querySelectorAll(
-                    '[data-chat-enhancer-injected]'
-                );
-                injectedElements.forEach(el => {
-                    const index = this.injectedEls.indexOf(el as HTMLElement);
-                    if (index > -1) {
-                        this.injectedEls.splice(index, 1);
-                    }
-                });
-            }
-        });
+        this.injectedEls.clear();
+        this.processedMessages.clear();
     }
 }
