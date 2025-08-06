@@ -35,7 +35,7 @@ export default class PlayerTagger extends Plugin {
         var tags = this.getTagsForPlayer(playerName);
         tags.forEach((tag) => {
             const span = document.createElement('span');
-            span.innerHTML = `<span>${tag.trim()}</span>`;
+            span.innerHTML = tag.trim();
             span.style.cssText = this.getTagStyle(tag.trim());
             outerSpan.appendChild(span);
         })
