@@ -54,7 +54,7 @@ export default class PlayerTagger extends Plugin {
         this.settings.playerTags = {
             text: 'Player Tags (username:tag1,tag2;username2:tag1,tag2;)',
             type: SettingsTypes.text,
-            value: '0rangeYouGlad:CLAN⚔️,Example Tag',
+            value: 'ExampleUsername:CLAN⚔️,Example Tag',
             callback: () => {
                 this.cleanupProcessedElements();
                 if(this.settings.tagChat.value) this.scanAllMessages();
