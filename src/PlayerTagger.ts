@@ -1,4 +1,4 @@
-import {Plugin, SettingsTypes} from "@highlite/plugin-api";
+import {Plugin, SettingsTypes} from "@highlite/core";
 
 export default class PlayerTagger extends Plugin {
     pluginName: string = 'Player Tagger';
@@ -53,8 +53,8 @@ export default class PlayerTagger extends Plugin {
         // TODO use actual JSON for this?
         this.settings.playerTags = {
             text: 'Player Tags (username:tag1,tag2;username2:tag1,tag2;)',
-            type: SettingsTypes.text,
-            value: 'ExampleUsername:CLAN⚔️,Example Tag',
+            type: SettingsTypes.textarea,
+            value: 'ExampleUsername:CLAN⚔️,Example Tag; ExampleUsername2:CLAN⚔️,Example Tag;',
             callback: () => {
                 this.cleanupProcessedElements();
                 if(this.settings.tagChat.value) this.scanAllMessages();
@@ -64,7 +64,7 @@ export default class PlayerTagger extends Plugin {
 
         this.settings.tagStyles = {
             text: 'Tag styles (+tag=css +tag2=css)',
-            type: SettingsTypes.text,
+            type: SettingsTypes.textarea,
             value: '+CLAN⚔️=font-weight:300;background:rgba(230,230,250,200);border:2px solid rgba(75,0,130,255);border-radius:2px;text-align: center;padding:2px 2px;margin-right:2px;color:rgba(75,0,130,255);font-size: x-small; line-height:2;',
             callback: () => {
                 this.cleanupProcessedElements();
